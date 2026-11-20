@@ -57,7 +57,11 @@ select,button{font:inherit;color:var(--ink);background:var(--card);border:1px so
 #mwrap.can-r::after{content:"";position:absolute;top:1px;right:1px;bottom:1px;width:36px;border-radius:0 8px 8px 0;pointer-events:none;background:linear-gradient(270deg,var(--card),transparent)}
 #mhint{display:none;font-size:12px;color:var(--mute);text-align:center;padding-top:6px}
 #mhint b{color:var(--acc)}
-#mwrap.can-r+#mhint{display:block}
+#mwrap.can-b::before{content:"";position:absolute;left:1px;right:1px;bottom:1px;height:32px;border-radius:0 0 8px 8px;pointer-events:none;z-index:2;background:linear-gradient(0deg,var(--card),transparent)}
+#mhint span{display:none}
+#mwrap.can-r+#mhint,#mwrap.can-b+#mhint{display:block}
+#mwrap.can-r+#mhint .h,#mwrap.can-b+#mhint .v{display:inline}
+#mwrap.can-r.can-b+#mhint .v::after{content:" \00b7 ";color:var(--mute)}
 #mlist{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:8px}
 #mlist table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
 #mlist th{position:sticky;top:0;background:var(--card);text-align:left;font-weight:600;font-size:12px;color:var(--mute);padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
@@ -194,7 +198,7 @@ a.pby{order:3;margin-left:0}
       <button id="sortdir" type="button" data-dir="asc" style="padding:3px 8px;font-size:12px;flex:none">↑ Ascending</button>
       <span id="sprog" role="status" style="font-size:12px;color:var(--mute);white-space:nowrap"></span></div></div>
     <div id="mwrap"><div id="mlist" aria-label="Markets"></div></div>
-    <div id="mhint" aria-hidden="true">Swipe or scroll sideways to see more metrics <b>→</b></div>
+    <div id="mhint" aria-hidden="true"><span class="v">Scroll down for more markets <b>↓</b></span><span class="h">Swipe sideways for more metrics <b>→</b></span></div>
   </div>
 
   <div id="err"></div>
@@ -783,7 +787,7 @@ async function init() {
     w.classList.toggle("can-r", t.scrollLeft + t.clientWidth < t.scrollWidth - 2);
   }
   $("tabs").addEventListener("scroll", tabHint, { passive: true });
-  function listHint() { const l = $("mlist"); $("mwrap").classList.toggle("can-r", l.scrollLeft + l.clientWidth < l.scrollWidth - 2); }
+  function listHint() { const l = $("mlist"); const w = $("mwrap"); w.classList.toggle("can-r", l.scrollLeft + l.clientWidth < l.scrollWidth - 2); w.classList.toggle("can-b", l.scrollTop + l.clientHeight < l.scrollHeight - 2); }
   $("mlist").addEventListener("scroll", listHint, { passive: true });
   addEventListener("resize", () => { tabHint(); listHint(); });
   $("tabl").addEventListener("click", () => $("tabs").scrollBy({ left: -$("tabs").clientWidth * 0.6, behavior: "smooth" }));
