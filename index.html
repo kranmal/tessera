@@ -409,7 +409,9 @@ function drawChart(el, pts, opt) {
   if (lo === hi) { lo -= 1; hi += 1; }
   const pad = (hi - lo) * 0.06; if (!opt.bar) { lo -= pad; hi += pad; }
   const x0 = xs[0], x1 = xs[xs.length - 1] || x0 + 1;
-  const X = (t) => L + ((t - x0) / (x1 - x0 || 1)) * (W - L - R);
+  // bars are centred on their timestamp, so inset the x range by half a bar to keep the first and last inside the plot
+  const bw = Math.max(1, ((W - L - R) / pts.length) * 0.7), inset = opt.bar ? bw / 2 : 0;
+  const X = (t) => L + inset + ((t - x0) / (x1 - x0 || 1)) * (W - L - R - 2 * inset);
   const Y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
@@ -425,7 +427,6 @@ function drawChart(el, pts, opt) {
   [0, 0.5, 1].forEach((f, i) => add("text", { x: L + f * (W - L - R), y: H - 5, "text-anchor": i === 0 ? "start" : i === 2 ? "end" : "middle", "font-size": 11, fill: "var(--mute)" }, dt(x0 + f * (x1 - x0))));
   if (opt.bar) {
     add("line", { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: "var(--mute)", "stroke-width": 1 });
-    const bw = Math.max(1, ((W - L - R) / pts.length) * 0.7);
     pts.forEach((p) => add("rect", { x: X(p.t) - bw / 2, y: Math.min(Y(p.v), Y(0)), width: bw, height: Math.abs(Y(p.v) - Y(0)), fill: p.v >= 0 ? "var(--up)" : "var(--down)", opacity: 0.85 }));
   } else {
     if (opt.zero && lo < 0 && hi > 0) add("line", { x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: "var(--mute)", "stroke-dasharray": "3 3" });
