@@ -15,3 +15,15 @@ python3 server.py 8803   # then open http://localhost:8803
 ```
 
 Not affiliated with or endorsed by Minara AI. Data can be delayed or wrong. Not investment advice.
+
+## Stock reference quote on GitHub Pages
+
+Pages is static, so `/api/stock` (Yahoo) needs a proxy. `worker/` is a Cloudflare Worker that does the same job as `server.py` (GET `/api/stock` only, fixed upstream host, strict symbol check, CORS limited to `https://kranmal.github.io` and localhost).
+
+```bash
+cd worker
+npx wrangler login
+npx wrangler deploy
+```
+
+Then set `STOCK_API` in `index.html` to the printed `https://tessera-quotes.<subdomain>.workers.dev` for the Pages host. Yahoo's chart endpoint is unofficial and may change or rate-limit.

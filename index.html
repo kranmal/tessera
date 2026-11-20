@@ -258,6 +258,9 @@ const usd = (n, d = 2) => "$" + nf(n, d);
 // price with precision that suits the magnitude (stocks 2dp, FX 4dp, memecoins more)
 const pd = (n) => { n = Math.abs(+n); return n >= 10 ? 2 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8; };
 const SYM = { USD: "$", EUR: "€", GBP: "£" };
+// Local server.py serves /api/stock itself. On GitHub Pages there is no server, so quotes
+// come from the Cloudflare Worker in worker/ (set its URL here after deploying it).
+const STOCK_API = ""; // e.g. location.hostname === "kranmal.github.io" ? "https://tessera-quotes.<you>.workers.dev" : ""
 const fx = { USD: { r: 1, t: 0 }, EUR: null, GBP: null }; // r = USD per 1 unit of the currency (Yahoo EURUSD=X / GBPUSD=X)
 let ccy = "USD";
 const px = (n) => "$" + nf(n, pd(n));
@@ -321,7 +324,7 @@ async function refreshStock() {
   if (!ref) { state.stock = null; state.stockErr = null; w.style.display = "none"; return; }
   let hint = false;
   try {
-    const r = await fetch("/api/stock?days=" + state.range + "&symbol=" + encodeURIComponent(ref), { cache: "no-store" });
+    const r = await fetch(STOCK_API + "/api/stock?days=" + state.range + "&symbol=" + encodeURIComponent(ref), { cache: "no-store" });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || "HTTP " + r.status);
     if (ref !== state.ref) return; // market changed while this was in flight
@@ -850,7 +853,7 @@ async function init() {
   q.addEventListener("input", fill);
   async function loadFx() {
     for (const c of ["EUR", "GBP"]) {
-      try { const d = await (await fetch("/api/stock?days=1&symbol=" + c + "USD%3DX", { cache: "no-store" })).json(); if (d.price > 0) fx[c] = { r: d.price, t: d.time || Date.now() }; } catch (e) {}
+      try { const d = await (await fetch(STOCK_API + "/api/stock?days=1&symbol=" + c + "USD%3DX", { cache: "no-store" })).json(); if (d.price > 0) fx[c] = { r: d.price, t: d.time || Date.now() }; } catch (e) {}
     }
     if (ccy !== "USD") fill();
   }
