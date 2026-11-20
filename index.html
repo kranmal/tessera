@@ -210,9 +210,9 @@ a.pby{order:3;margin-left:0}
   <div class="card"><h2>Mark vs oracle premium <span>(%, sampled with each funding interval)</span></h2><div class="chart" id="c-prem"></div></div>
 
   <p class="note">
-    Public, read-only data from Hyperliquid's info API; nothing is sent from this page except market queries.
+    Public, read-only data from Hyperliquid's info API; nothing is sent from this page except market queries and the ticker symbol for the reference quote.
     "Oracle" is the reference price Hyperliquid uses for this market, not an independent stock quote.
-    The reference price comes from Yahoo Finance through this page's local server (an unofficial, possibly delayed source): the stock itself, the spot index, front-month futures for commodities, spot FX, or the USD crypto pair.
+    The reference price comes from Yahoo Finance through a small proxy (the local server when run locally, a Cloudflare Worker on the hosted site; Yahoo is an unofficial, possibly delayed source): the stock itself, the spot index, front-month futures for commodities, spot FX, or the USD crypto pair.
     Those can differ from what the perp tracks (futures roll, index definition, contract size), so a steady offset is not necessarily mispricing.
     The perp trades 24/7; stocks only trade in pre-market, regular and after-hours sessions, so outside those the spread compares the perp with the last stock price.
     Markets are all Hyperliquid perps with 24h volume: Minara trades Hyperliquid perps, but Minara exposes no list of its own, so some builder-dex markets may not be tradable inside Minara.
