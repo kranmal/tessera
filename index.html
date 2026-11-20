@@ -46,6 +46,18 @@ select,button{font:inherit;color:var(--ink);background:var(--card);border:1px so
 #tabs button .n{font-size:11px;margin-left:4px;opacity:.75}
 #tabs button[aria-selected="true"]{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
 #tabs button:disabled{opacity:.35;cursor:default}
+#tabwrap{position:relative;flex:1 1 100%;order:-1;min-width:0}
+#tabwrap #tabs{order:0}
+#tabwrap .tabnav{position:absolute;top:0;bottom:1px;width:34px;display:none;align-items:center;border:0;border-radius:0;padding:0;font-size:20px;line-height:1;color:var(--ink);cursor:pointer;z-index:1}
+#tabwrap .tabnav.l{left:0;justify-content:flex-start;padding-left:4px;background:linear-gradient(90deg,var(--card) 45%,transparent)}
+#tabwrap .tabnav.r{right:0;justify-content:flex-end;padding-right:4px;background:linear-gradient(270deg,var(--card) 45%,transparent)}
+#tabwrap.can-l .tabnav.l,#tabwrap.can-r .tabnav.r{display:flex}
+#tabwrap .tabnav:hover{color:var(--acc)}
+#mwrap{position:relative}
+#mwrap.can-r::after{content:"";position:absolute;top:1px;right:1px;bottom:1px;width:36px;border-radius:0 8px 8px 0;pointer-events:none;background:linear-gradient(270deg,var(--card),transparent)}
+#mhint{display:none;font-size:12px;color:var(--mute);text-align:center;padding-top:6px}
+#mhint b{color:var(--acc)}
+#mwrap.can-r+#mhint{display:block}
 #mlist{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:8px}
 #mlist table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
 #mlist th{position:sticky;top:0;background:var(--card);text-align:left;font-weight:600;font-size:12px;color:var(--mute);padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:1}
@@ -171,7 +183,7 @@ a.pby{order:3;margin-left:0}
   <div class="card" id="picker">
     <div id="searchbar"><input id="q" type="search" placeholder="Search markets by name, category or exchange…" title="Enter opens the first match, Esc clears." aria-label="Search markets" autocomplete="off">
       <span id="qn" style="font-size:12px;color:var(--mute)"></span></div>
-    <div id="tabbar"><div id="tabs" role="tablist" aria-label="Market category"></div>
+    <div id="tabbar"><div id="tabwrap"><button type="button" class="tabnav l" id="tabl" aria-label="Scroll categories left" tabindex="-1">‹</button><div id="tabs" role="tablist" aria-label="Market category"></div><button type="button" class="tabnav r" id="tabr" aria-label="Scroll categories right" tabindex="-1">›</button></div>
       <label id="ccyl">Currency <select id="ccy" aria-label="Currency for price change"><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></label>
       <div id="sortg"><label id="sortl">Sort <select id="sort" aria-label="Sort markets">
         <option value="name">Name A–Z</option><option value="vol">24h volume</option>
@@ -181,7 +193,8 @@ a.pby{order:3;margin-left:0}
       </select></label>
       <button id="sortdir" type="button" data-dir="asc" style="padding:3px 8px;font-size:12px;flex:none">↑ Ascending</button>
       <span id="sprog" role="status" style="font-size:12px;color:var(--mute);white-space:nowrap"></span></div></div>
-    <div id="mlist" aria-label="Markets"></div>
+    <div id="mwrap"><div id="mlist" aria-label="Markets"></div></div>
+    <div id="mhint" aria-hidden="true">Swipe or scroll sideways to see more metrics <b>→</b></div>
   </div>
 
   <div id="err"></div>
@@ -764,6 +777,17 @@ async function init() {
   }, { root: $("mlist"), rootMargin: "120px 0px" });
   const q = $("q");
   const TABS = ["★ Favorites", ...CATS];
+  function tabHint() { // show edge fades + arrows only while more tabs are hidden that way
+    const t = $("tabs"), w = $("tabwrap");
+    w.classList.toggle("can-l", t.scrollLeft > 2);
+    w.classList.toggle("can-r", t.scrollLeft + t.clientWidth < t.scrollWidth - 2);
+  }
+  $("tabs").addEventListener("scroll", tabHint, { passive: true });
+  function listHint() { const l = $("mlist"); $("mwrap").classList.toggle("can-r", l.scrollLeft + l.clientWidth < l.scrollWidth - 2); }
+  $("mlist").addEventListener("scroll", listHint, { passive: true });
+  addEventListener("resize", () => { tabHint(); listHint(); });
+  $("tabl").addEventListener("click", () => $("tabs").scrollBy({ left: -$("tabs").clientWidth * 0.6, behavior: "smooth" }));
+  $("tabr").addEventListener("click", () => $("tabs").scrollBy({ left: $("tabs").clientWidth * 0.6, behavior: "smooth" }));
   let tab = null;
   const inTab = (m, t) => (t === TABS[0] ? state.favs.has(m.coin) : m.cat === t);
   function fill() {
@@ -776,7 +800,7 @@ async function init() {
       const own = cur && TABS.indexOf(cur.cat);
       tab = TABS[counts[own] > 0 ? own : Math.max(1, counts.findIndex((c, i) => i > 0 && c > 0))] || TABS[1];
     }
-    const tabs = $("tabs"); tabs.replaceChildren();
+    const tabs = $("tabs"), keepX = tabs.scrollLeft; tabs.replaceChildren();
     TABS.forEach((t, i) => {
       const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", String(t === tab));
@@ -785,6 +809,10 @@ async function init() {
       b.addEventListener("click", () => { tab = t; fill(); });
       tabs.append(b);
     });
+    tabs.scrollLeft = keepX;
+    const sel = tabs.querySelector('[aria-selected="true"]');
+    if (sel) { if (sel.offsetLeft < tabs.scrollLeft + 34) tabs.scrollLeft = sel.offsetLeft - 34; else if (sel.offsetLeft + sel.offsetWidth > tabs.scrollLeft + tabs.clientWidth - 34) tabs.scrollLeft = sel.offsetLeft + sel.offsetWidth - tabs.clientWidth + 34; }
+    tabHint();
     const list = $("mlist"), keep = list.scrollTop; list.replaceChildren();
     const ms = markets.filter((m) => inTab(m, tab) && hit(m));
     const chg = (m) => { const p = +m.ctx.prevDayPx; return p > 0 ? +m.ctx.markPx / p - 1 : -Infinity; };
@@ -836,7 +864,7 @@ async function init() {
         r.addEventListener("click", pick);
         r.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
       }
-      list.append(t); list.scrollTop = keep;
+      list.append(t); list.scrollTop = keep; listHint();
       // sorting by a candle-based column needs candles for every row in view, not only the visible ones
       for (let i = rangeQ.length - 1; i >= 0; i--) if (!rangeQ[i].isConnected) { queued.delete(rangeQ[i]._m.coin); rangeQ.splice(i, 1); } // rows from the previous render
       if (LAZY[sk]) for (const r of t.tBodies[0].rows) { const c = r._rg._m.coin; if (!queued.has(c) && !rangeFresh(c) && rangeCache.get(c) !== "none") { queued.add(c); rangeQ.push(r._rg); } }
