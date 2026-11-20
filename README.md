@@ -26,4 +26,4 @@ npx wrangler login
 npx wrangler deploy
 ```
 
-Then set `STOCK_API` in `index.html` to the printed `https://tessera-quotes.<subdomain>.workers.dev` for the Pages host. Yahoo's chart endpoint is unofficial and may change or rate-limit.
+Then `STOCK_API` in `index.html` already points the Pages host at `https://tessera-quotes.ketan-ranmal.workers.dev`; change it if you redeploy under another name.

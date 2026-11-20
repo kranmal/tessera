@@ -260,7 +260,7 @@ const pd = (n) => { n = Math.abs(+n); return n >= 10 ? 2 : n >= 1 ? 4 : n >= 0.1
 const SYM = { USD: "$", EUR: "€", GBP: "£" };
 // Local server.py serves /api/stock itself. On GitHub Pages there is no server, so quotes
 // come from the Cloudflare Worker in worker/ (set its URL here after deploying it).
-const STOCK_API = ""; // e.g. location.hostname === "kranmal.github.io" ? "https://tessera-quotes.<you>.workers.dev" : ""
+const STOCK_API = location.hostname === "kranmal.github.io" ? "https://tessera-quotes.ketan-ranmal.workers.dev" : "";
 const fx = { USD: { r: 1, t: 0 }, EUR: null, GBP: null }; // r = USD per 1 unit of the currency (Yahoo EURUSD=X / GBPUSD=X)
 let ccy = "USD";
 const px = (n) => "$" + nf(n, pd(n));
