@@ -116,7 +116,19 @@ button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc);font-weight
 .tile .s{font-size:12px;color:var(--mute);margin-top:2px}
 .up{color:var(--up)} .down{color:var(--down)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px;margin-bottom:12px;position:relative}
-.card h2{font-size:13px;margin:0 0 4px;font-weight:600}
+.card h2{font-size:13px;margin:0 0 4px;font-weight:600;padding-right:30px}
+.help{flex:none;width:22px;height:22px;padding:0;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--mute);font:600 13px/1 inherit;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.help:hover,.help:focus-visible{color:var(--acc);border-color:var(--acc)}
+.card>.help{position:absolute;top:8px;right:8px}
+#searchbar .help{margin-left:auto}
+.sech{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0 0 6px}
+#helpdlg{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:16px 18px 18px;width:min(440px,calc(100% - 32px));box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#helpdlg::backdrop{background:rgba(0,0,0,.5)}
+#helpdlg h3{margin:0 28px 8px 0;font-size:16px}
+#helpdlg p{margin:0 0 10px;font-size:14px;line-height:1.5}
+#helpdlg p:last-child{margin-bottom:0}
+#helpdlg .x{position:absolute;top:8px;right:8px;width:30px;height:30px;padding:0;border-radius:50%;border:0;background:transparent;color:var(--mute);font-size:22px;line-height:1;cursor:pointer}
+#helpdlg .x:hover,#helpdlg .x:focus-visible{color:var(--ink);background:var(--line)}
 .card h2 span{color:var(--mute);font-weight:400}
 .card h2 .lg{display:inline-block;width:14px;height:0;border-top:2px solid var(--acc);vertical-align:middle;margin:0 4px 0 8px}
 .card h2 .lg.s{border-top:2px dashed var(--stock)}
@@ -186,7 +198,7 @@ a.pby{order:3;margin-left:0}
   </aside>
   <div class="card" id="picker">
     <div id="searchbar"><input id="q" type="search" placeholder="Search markets by name, category or exchange…" title="Enter opens the first match, Esc clears." aria-label="Search markets" autocomplete="off">
-      <span id="qn" style="font-size:12px;color:var(--mute)"></span></div>
+      <span id="qn" style="font-size:12px;color:var(--mute)"></span><button type="button" class="help" data-help="picker" aria-label="What is this section?" title="What is this section?">?</button></div>
     <div id="tabbar"><div id="tabwrap"><button type="button" class="tabnav l" id="tabl" aria-label="Scroll categories left" tabindex="-1">‹</button><div id="tabs" role="tablist" aria-label="Market category"></div><button type="button" class="tabnav r" id="tabr" aria-label="Scroll categories right" tabindex="-1">›</button></div>
       <label id="ccyl">Currency <select id="ccy" aria-label="Currency for price change"><option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option></select></label>
       <div id="sortg"><label id="sortl">Sort <select id="sort" aria-label="Sort markets">
@@ -205,9 +217,11 @@ a.pby{order:3;margin-left:0}
   <div id="warn"></div>
   <div id="swarn"></div>
 
+  <div class="sech">Key numbers <button type="button" class="help" data-help="tiles" aria-label="What is this section?" title="What is this section?">?</button></div>
   <div class="tiles" id="tiles"></div>
 
   <div class="card" id="alerts">
+    <button type="button" class="help" data-help="alerts" aria-label="What is this section?" title="What is this section?">?</button>
     <h2>Price alerts <span>(favorites only · checked every 15s against mark price · only while this page is open)</span></h2>
     <div class="arow">
       <select id="a-coin" aria-label="Alert market"></select>
@@ -219,12 +233,13 @@ a.pby{order:3;margin-left:0}
     <div id="a-msg" role="status"></div>
     <div id="a-list"></div>
   </div>
+  <dialog id="helpdlg" aria-labelledby="helpt"><button type="button" class="x" aria-label="Close help">×</button><h3 id="helpt"></h3><div id="helpb"></div></dialog>
   <div id="toasts" aria-live="polite"></div>
 
-  <div class="card"><h2>Price <span>(15m close, USD)</span><span class="lg"></span><span>Perp</span><span class="lg s"></span><span id="lgref">Reference</span></h2><div class="chart" id="c-price"></div></div>
-  <div class="card"><h2>Perp vs reference spread <span>(%, where both have a 15m bar; positive = perp above reference)</span></h2><div class="chart" id="c-spread"></div></div>
-  <div class="card"><h2>Funding rate <span>(per hour; positive = longs pay shorts)</span></h2><div class="chart" id="c-fund"></div></div>
-  <div class="card"><h2>Mark vs oracle premium <span>(%, sampled with each funding interval)</span></h2><div class="chart" id="c-prem"></div></div>
+  <div class="card"><button type="button" class="help" data-help="price" aria-label="What is this section?" title="What is this section?">?</button><h2>Price <span>(15m close, USD)</span><span class="lg"></span><span>Perp</span><span class="lg s"></span><span id="lgref">Reference</span></h2><div class="chart" id="c-price"></div></div>
+  <div class="card"><button type="button" class="help" data-help="spread" aria-label="What is this section?" title="What is this section?">?</button><h2>Perp vs reference spread <span>(%, where both have a 15m bar; positive = perp above reference)</span></h2><div class="chart" id="c-spread"></div></div>
+  <div class="card"><button type="button" class="help" data-help="fund" aria-label="What is this section?" title="What is this section?">?</button><h2>Funding rate <span>(per hour; positive = longs pay shorts)</span></h2><div class="chart" id="c-fund"></div></div>
+  <div class="card"><button type="button" class="help" data-help="prem" aria-label="What is this section?" title="What is this section?">?</button><h2>Mark vs oracle premium <span>(%, sampled with each funding interval)</span></h2><div class="chart" id="c-prem"></div></div>
 
   <p class="note">
     Public, read-only data from Hyperliquid's info API; nothing is sent from this page except market queries and the ticker symbol for the reference quote.
@@ -252,6 +267,52 @@ a.pby{order:3;margin-left:0}
   const q=document.getElementById("q"), mq=window.matchMedia("(max-width:700px)");
   const ph=()=>{ q.placeholder = mq.matches ? "Search markets…" : "Search markets by name, category or exchange…"; };
   ph(); if(mq.addEventListener) mq.addEventListener("change",ph);
+})();
+</script>
+<script>
+(function(){
+  const HELP = {
+    picker: ["Market list", [
+      "This is the list of every market you can look at. Click one and all the numbers and charts below switch to it.",
+      "Use the tabs to pick a category (stocks, crypto, commodities and so on), the search box to find a market by name, and Sort to reorder the list. The star tab shows the markets you have starred.",
+      "Slide the table sideways to see more columns, such as how much was traded and how far the price moved. Currency only changes how the price change column is shown."]],
+    tiles: ["Key numbers", [
+      "A quick summary of the market you picked.",
+      "Mark price is what the contract is trading at right now. Oracle is the reference price Hyperliquid uses to keep it honest.",
+      "Reference is the price of the real thing (for example the actual stock) from Yahoo Finance. It can be a little late. Perp vs reference shows how far apart the two prices are.",
+      "24h change is how much the price moved over the last day. Mark vs oracle is the small gap between the trading price and Hyperliquid's reference price.",
+      "Funding is a small fee traders pay each other every hour (see the funding chart). Open interest is the total size of all open bets. 24h volume is how much money changed hands in the last day."]],
+    alerts: ["Price alerts", [
+      "Get a heads-up when one of your starred markets reaches a price you choose.",
+      "Pick a market, choose whether it rises to or falls to your price, type the price and press Add alert.",
+      "Alerts are checked every 15 seconds, only while this page is open, and are saved only in this browser. They can be late or missed, so do not rely on them for anything important."]],
+    price: ["Price chart", [
+      "The price of this market over the time range you picked at the top (24h, 3d or 7d), one point every 15 minutes.",
+      "The solid line is the contract's own price. The dashed line is the price of the real thing from Yahoo Finance, when there is one. The two lines usually move together."]],
+    spread: ["Perp vs reference spread", [
+      "How far the contract's price is from the price of the real thing, shown as a percentage.",
+      "Above zero means the contract costs more than the real thing. Below zero means it costs less. A small gap is normal, and it can grow when the real market is closed.",
+      "A point only appears when both prices exist at that time."]],
+    fund: ["Funding rate", [
+      "These contracts never expire, so traders pay each other a small fee every hour to keep the contract price close to the real price. This is called funding.",
+      "A bar above zero means buyers (longs) pay sellers (shorts). Below zero means the opposite. A taller bar means a bigger fee."]],
+    prem: ["Mark vs oracle premium", [
+      "The gap between the price the contract is trading at (mark) and the reference price Hyperliquid uses (oracle), as a percentage.",
+      "Above zero means the contract trades a bit higher than the reference. The gap is usually close to zero. A large gap can mean the market is thin or moving fast."]]
+  };
+  const dlg = document.getElementById("helpdlg");
+  if (!dlg) return;
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest(".help");
+    if (!b || !HELP[b.dataset.help]) return;
+    const [t, ps] = HELP[b.dataset.help];
+    document.getElementById("helpt").textContent = t;
+    document.getElementById("helpb").replaceChildren(...ps.map((x) => { const p = document.createElement("p"); p.textContent = x; return p; }));
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+  });
+  const close = () => (typeof dlg.close === "function" ? dlg.close() : dlg.removeAttribute("open"));
+  dlg.querySelector(".x").addEventListener("click", close);
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); }); // click on the dimmed backdrop
 })();
 </script>
 <script>
