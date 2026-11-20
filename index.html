@@ -110,8 +110,9 @@ button[aria-pressed="true"]{border-color:var(--acc);color:var(--acc);font-weight
 #dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}
 #dot.ok{background:var(--up)} #dot.bad{background:var(--down)}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
-.tile .k{font-size:12px;color:var(--mute)}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.tile .k{font-size:12px;color:var(--mute);padding-right:24px}
+.tile .help{position:absolute;top:8px;right:8px;width:20px;height:20px;font-size:12px}
 .tile .v{font-size:20px;font-weight:650;margin-top:2px;font-variant-numeric:tabular-nums}
 .tile .s{font-size:12px;color:var(--mute);margin-top:2px}
 .up{color:var(--up)} .down{color:var(--down)}
@@ -296,6 +297,26 @@ a.pby{order:3;margin-left:0}
     fund: ["Funding rate", [
       "These contracts never expire, so traders pay each other a small fee every hour to keep the contract price close to the real price. This is called funding.",
       "A bar above zero means buyers (longs) pay sellers (shorts). Below zero means the opposite. A taller bar means a bigger fee."]],
+    "t-mark": ["Mark price", [
+      "The current price of this contract on Hyperliquid. The small line underneath is the oracle price, the outside reference price Hyperliquid compares it against."]],
+    "t-ref": ["Reference price", [
+      "The price of the real thing this contract follows (for example the actual company share), taken from Yahoo Finance. It can be a little late, and stock prices only move while the stock market is open.",
+      "The small line shows how much it moved since the previous close, and whether the stock market is open, in pre-market, in after-hours or closed."]],
+    "t-spread": ["Perp vs reference", [
+      "How far the contract's price is from the reference price, as a percentage and in dollars. Above zero means the contract costs more than the real thing, below zero means it costs less.",
+      "When the stock market is closed, the contract is compared with the last known stock price, so the gap can look bigger or smaller than it really is."]],
+    "t-chg": ["24h change", [
+      "How much the contract's price has moved compared with 24 hours ago, as a percentage. Green means up and red means down. The small line shows the price it started from."]],
+    "t-prem": ["Mark vs oracle", [
+      "The gap between the price the contract is trading at (mark) and Hyperliquid's reference price (oracle). It is usually very close to zero. A large gap can mean the market is thin or moving fast."]],
+    "t-fund": ["Funding per hour", [
+      "A small fee that buyers and sellers of this contract pay each other every hour, shown as a percentage. Positive means buyers (longs) pay sellers (shorts), negative means the opposite.",
+      "The small line stretches the hourly rate over a year. It is only a rough guide, because the rate keeps changing."]],
+    "t-oi": ["Open interest", [
+      "The total value of all positions currently open in this market, in dollars. The small line shows the same amount in units of the asset.",
+      "More open interest means more money is riding on this market."]],
+    "t-vol": ["24h volume", [
+      "The total value traded in this market over the last 24 hours, in dollars. Higher volume usually means it is easier to buy or sell without moving the price."]],
     prem: ["Mark vs oracle premium", [
       "The gap between the price the contract is trading at (mark) and the reference price Hyperliquid uses (oracle), as a percentage.",
       "Above zero means the contract trades a bit higher than the reference. The gap is usually close to zero. A large gap can mean the market is thin or moving fast."]]
@@ -453,11 +474,14 @@ function renderTiles() {
     ["Open interest", compact(oi), nf(+c.openInterest, 0) + " " + (state.coin || "").replace(/^.*:/, ""), ""],
     ["24h volume", compact(+c.dayNtlVlm), "notional", ""],
   );
+  const TILE_HELP = { "Mark price": "t-mark", "Perp vs reference": "t-spread", "24h change": "t-chg", "Mark vs oracle": "t-prem", "Funding / hr": "t-fund", "Open interest": "t-oi", "24h volume": "t-vol" };
   $("tiles").replaceChildren(...tiles.map(([k, v, s, cls]) => {
     const d = document.createElement("div"); d.className = "tile";
     const a = document.createElement("div"); a.className = "k"; a.textContent = k;
     const b = document.createElement("div"); b.className = "v " + cls; b.textContent = v;
     const e = document.createElement("div"); e.className = "s"; e.textContent = s;
+    const hk = k.startsWith("Reference") ? "t-ref" : TILE_HELP[k];
+    if (hk) { const h = document.createElement("button"); h.type = "button"; h.className = "help"; h.dataset.help = hk; h.setAttribute("aria-label", "What is " + k + "?"); h.title = "What is this?"; h.textContent = "?"; d.append(h); }
     d.append(a, b, e); return d;
   }));
   // sanity: mark far from oracle suggests a broken or illiquid market
