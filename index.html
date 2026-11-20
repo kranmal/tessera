@@ -9,14 +9,14 @@
 :root{
   color-scheme:light;
   --bg:#f5f6f8; --card:#ffffff; --ink:#111827; --mute:#5b6472; --line:#d9dde3;
-  --up:#0b7a43; --down:#c5221f; --acc:#1d4ed8; --warn:#9a4a07; --stock:#b23a0a; --star:#966000;
+  --up:#0b7a43; --down:#c5221f; --acc:#1d4ed8; --warn:#9a4a07; --stock:#b23a0a; --star:#966000; --news:#6d28d9;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){color-scheme:dark;--bg:#0e1116; --card:#161b22; --ink:#e6edf3; --mute:#8b949e; --line:#262d36;
-        --up:#3fb950; --down:#f85149; --acc:#58a6ff; --warn:#d29922; --stock:#f0883e; --star:#d29922;}
+        --up:#3fb950; --down:#f85149; --acc:#58a6ff; --warn:#d29922; --stock:#f0883e; --star:#d29922; --news:#a78bfa;}
 }
 :root[data-theme="dark"]{color-scheme:dark;--bg:#0e1116; --card:#161b22; --ink:#e6edf3; --mute:#8b949e; --line:#262d36;
-        --up:#3fb950; --down:#f85149; --acc:#58a6ff; --warn:#d29922; --stock:#f0883e; --star:#d29922;}
+        --up:#3fb950; --down:#f85149; --acc:#58a6ff; --warn:#d29922; --stock:#f0883e; --star:#d29922; --news:#a78bfa;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
   font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
@@ -162,6 +162,19 @@ a.pby{order:3;margin-left:0}
 
 #warn{display:none;background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid var(--warn);
   border-radius:8px;padding:8px 12px;margin-bottom:12px}
+
+.pulse .chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px;padding-right:30px}
+.pulse .chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:4px 11px;cursor:pointer}
+.pulse .chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+#nlist{list-style:none;margin:0;padding:0;max-height:280px;overflow:auto}
+#nlist li{border-top:1px solid var(--line)}#nlist li:first-child{border-top:0}
+#nlist a{display:block;padding:9px 2px;color:inherit;text-decoration:none}
+#nlist a:hover .nt{text-decoration:underline}
+#nlist .nt{font-weight:600}
+#nlist .nm{color:var(--mute);font-size:12px;margin-top:2px}
+.ntag{font-size:10px;padding:1px 6px;border-radius:5px;margin-right:6px;background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc);text-transform:capitalize}
+.ntag.hit{background:color-mix(in srgb,var(--news) 18%,transparent);color:var(--news)}
+#nnote{color:var(--mute);font-size:12px;padding:6px 0 8px}
 </style>
 </head>
 <body>
@@ -220,6 +233,13 @@ a.pby{order:3;margin-left:0}
 
   <div class="sech">Key numbers <button type="button" class="help" data-help="tiles" aria-label="What is this section?" title="What is this section?">?</button></div>
   <div class="tiles" id="tiles"></div>
+
+  <div class="card pulse" id="pulse"><button type="button" class="help" data-help="news" aria-label="What is this section?" title="What is this section?">?</button>
+    <h2 class="sech">Market Pulse <span style="font-weight:400;color:var(--mute)">(news, refreshed every 30 min)</span></h2>
+    <div class="chips" id="nchips" role="group" aria-label="News category"></div>
+    <ul id="nlist" aria-label="Headlines"></ul>
+    <div id="nnote" aria-live="polite"></div>
+  </div>
 
   <div class="card" id="alerts">
     <button type="button" class="help" data-help="alerts" aria-label="What is this section?" title="What is this section?">?</button>
@@ -287,6 +307,10 @@ a.pby{order:3;margin-left:0}
       "Get a heads-up when one of your starred markets reaches a price you choose.",
       "Pick a market, choose whether it rises to or falls to your price, type the price and press Add alert.",
       "Alerts are checked every 15 seconds, only while this page is open, and are saved only in this browser. They can be late or missed, so do not rely on them for anything important."]],
+    news: ["Market Pulse", [
+      "Recent news headlines from Market Pulse, our own news feed, which gathers stories from many publishers worldwide every 30 minutes.",
+      "\"For this market\" shows stories that name the market you picked. If none do, you see stories from the same category instead. The other buttons filter by category.",
+      "The purple N dots on the Price chart mark when those headlines were published, so you can see whether a move followed the news. Tap or click a dot to open the story. Headlines are not advice and are not checked by us."]],
     price: ["Price chart", [
       "The price of this market over the time range you picked at the top (24h, 3d or 7d), one point every 15 minutes.",
       "The solid line is the contract's own price. The dashed line is the price of the real thing from Yahoo Finance, when there is one. The two lines usually move together."]],
@@ -340,7 +364,7 @@ a.pby{order:3;margin-left:0}
 "use strict";
 const API = "https://api.hyperliquid.xyz/info";
 const $ = (id) => document.getElementById(id);
-const state = { ref: null, coin: null, dex: null, range: 3, lastOk: 0, series: {}, ctx: null, stock: null, stockErr: null, perpPts: [] };
+const state = { ref: null, coin: null, dex: null, range: 3, lastOk: 0, series: {}, ctx: null, stock: null, stockErr: null, perpPts: [], base: "", cat: "", news: [], newsAt: 0, newsErr: null, newsCat: "mine" };
 state.favs = new Set();
 try { const a = JSON.parse(localStorage.getItem("favs") || "[]"); if (Array.isArray(a)) state.favs = new Set(a.filter((x) => typeof x === "string")); } catch (e) {}
 try { const r = +localStorage.getItem("range"); if ([1,3,7].includes(r)) state.range = r; } catch (e) {}
@@ -545,6 +569,16 @@ function drawChart(el, pts, opt) {
     }
     add("path", { d: pts.map((p, i) => (i && !(opt.gap && p.t - pts[i - 1].t > opt.gap) ? "L" : "M") + X(p.t).toFixed(1) + " " + Y(p.v).toFixed(1)).join(""), fill: "none", stroke: "var(--acc)", "stroke-width": 1.8, "stroke-linejoin": "round" });
   }
+  if (opt.marks) for (const m of opt.marks) {
+    if (m.t < x0 || m.t > x1) continue;
+    const mx = X(m.t), g = add("g", { style: "cursor:pointer" });
+    const mk = (tag, a, text) => { const n = document.createElementNS(ns, tag); for (const k in a) n.setAttribute(k, a[k]); if (text != null) n.textContent = text; g.append(n); return n; };
+    mk("line", { x1: mx, x2: mx, y1: T + 14, y2: H - B, stroke: "var(--news)", "stroke-width": 1, opacity: 0.3 });
+    mk("circle", { cx: mx, cy: T + 8, r: 8, fill: "var(--news)", stroke: "var(--card)", "stroke-width": 2 });
+    mk("text", { x: mx, y: T + 11.5, "text-anchor": "middle", "font-size": 9, "font-weight": 700, fill: "var(--card)" }, "N");
+    mk("title", {}, dt(m.t) + " · " + m.title);
+    g.addEventListener("click", () => { if (/^https?:\/\//.test(m.link)) window.open(m.link, "_blank", "noopener,noreferrer"); });
+  }
   const guide = add("line", { y1: T, y2: H - B, stroke: "var(--mute)", "stroke-width": 1, opacity: 0, "stroke-dasharray": "2 2" });
   const tip = document.createElement("div"); tip.className = "tip";
   el.append(svg, tip);
@@ -566,7 +600,7 @@ function renderCharts() {
   const bySt = new Map(sp.map((p) => [p.t, p.v]));
   const price = (s.price || []).map((p) => ({ t: p.t, v: p.v, s: bySt.get(p.t) }));
   const spread = price.filter((p) => p.s != null).map((p) => ({ t: p.t, v: (p.v / p.s - 1) * 100 }));
-  drawChart($("c-price"), price, { overlay: sp, axis: (v) => nf(v, Math.max(0, pd(v) - 2)), tip: (v, p) => "perp " + px(v) + (p && p.s != null ? " · ref " + px(p.s) : "") });
+  drawChart($("c-price"), price, { marks: newsMarks(), overlay: sp, axis: (v) => nf(v, Math.max(0, pd(v) - 2)), tip: (v, p) => "perp " + px(v) + (p && p.s != null ? " · ref " + px(p.s) : "") });
   drawChart($("c-spread"), spread, { zero: true, gap: 45 * 60000, axis: (v) => nf(v, 2) + "%", tip: (v) => pct(v, 3) });
   drawChart($("c-fund"), s.fund || [], { bar: true, axis: (v) => nf(v, 4) + "%", tip: (v) => nf(v, 5) + "%/hr (" + pct(v * 8760, 1) + " ann.)" });
   drawChart($("c-prem"), s.prem || [], { zero: true, axis: (v) => nf(v, 2) + "%", tip: (v) => pct(v, 3) });
@@ -607,6 +641,78 @@ async function tick(withCharts) {
     setStatus(false, "Couldn't reach Hyperliquid (" + e.message + ")." + age + " Retrying…");
   }
 }
+
+/* ---------- Market Pulse news ---------- */
+const NEWS_URL = "https://kranmal.github.io/market-pulse/data/news.json";
+const NEWS_CHIPS = [["mine", "For this market"], ["all", "All"], ["stocks", "Stocks"], ["crypto", "Crypto"], ["commodities", "Commodities"], ["fx", "FX"], ["indices", "Indices"], ["other", "Other"]];
+const CAT_NEWS = { "Stocks & ETFs": "stocks", Indices: "indices", Commodities: "commodities", FX: "fx", Crypto: "crypto", Other: "other" };
+const NAMES = { NVDA: ["nvidia"], TSLA: ["tesla"], AAPL: ["apple"], MSFT: ["microsoft"], GOOGL: ["google", "alphabet"], GOOG: ["google", "alphabet"], AMZN: ["amazon"], META: ["meta platforms", "facebook"],
+  COIN: ["coinbase"], MSTR: ["microstrategy", "strategy inc"], HOOD: ["robinhood"], AMD: ["advanced micro devices"], INTC: ["intel"], PLTR: ["palantir"],
+  BTC: ["bitcoin"], ETH: ["ethereum", "ether"], SOL: ["solana"], XRP: ["ripple"], DOGE: ["dogecoin"], BNB: ["binance"], ADA: ["cardano"], AVAX: ["avalanche"],
+  GOLD: ["gold"], SILVER: ["silver"], CL: ["crude oil", "wti"], BRENTOIL: ["brent"], COPPER: ["copper"], NATGAS: ["natural gas"], PLATINUM: ["platinum"], PALLADIUM: ["palladium"],
+  SP500: ["s&p 500", "s&p500"], XYZ100: ["nasdaq"], JP225: ["nikkei"], KR200: ["kospi"], NIFTY: ["nifty"], EUR: ["euro", "eur/usd"], GBP: ["sterling", "gbp/usd"], JPY: ["yen", "usd/jpy"] };
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function newsMatcher(base) {
+  const b = /^k[A-Z]/.test(base) ? base.slice(1) : base; // kPEPE trades as 1000 PEPE
+  const names = (NAMES[b] || []).map(esc);
+  const ticker = b.length >= 2 && /^[A-Z0-9]+$/.test(b) ? new RegExp("(?:^|[^A-Za-z0-9])\\$?" + esc(b) + "(?![A-Za-z0-9])") : null; // tickers: exact upper case, so "ON" or "ALL" do not match ordinary words
+  const word = names.length ? new RegExp("\\b(?:" + names.join("|") + ")\\b", "i") : null;
+  return (title) => !!((ticker && ticker.test(title)) || (word && word.test(title)));
+}
+const matchedNews = () => { const f = state.base ? newsMatcher(state.base) : () => false; return state.news.filter((n) => f(n.title)); };
+function newsMarks() {
+  const lo = Date.now() - state.range * 864e5;
+  const out = []; // newest first; skip stories within 90 minutes of one already marked so dots do not pile up
+  for (const n of matchedNews()) if (n.t >= lo && out.every((o) => Math.abs(o.t - n.t) > 90 * 60000)) out.push(n);
+  return out.slice(0, 8);
+}
+function renderNews() {
+  const chips = $("nchips"), list = $("nlist"), note = $("nnote");
+  if (!chips) return;
+  chips.replaceChildren(...NEWS_CHIPS.map(([k, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.n = k; b.textContent = label;
+    b.setAttribute("aria-pressed", String(k === state.newsCat)); return b;
+  }));
+  const hits = new Set(matchedNews()), mineCat = CAT_NEWS[state.cat] || "other";
+  let items, msg = "";
+  if (state.newsCat === "mine") {
+    items = [...hits];
+    if (!items.length) { items = state.news.filter((n) => n.cat === mineCat); if (items.length && state.base) msg = "No headlines name " + state.base + " directly, so these are " + mineCat + " stories. "; }
+  } else items = state.newsCat === "all" ? state.news : state.news.filter((n) => n.cat === state.newsCat);
+  list.replaceChildren(...items.slice(0, 12).map((n) => {
+    const li = document.createElement("li"), a = document.createElement("a");
+    if (/^https?:\/\//.test(n.link)) { a.href = n.link; a.target = "_blank"; a.rel = "noopener noreferrer"; }
+    const t = document.createElement("div"); t.className = "nt"; t.textContent = n.title;
+    const m = document.createElement("div"); m.className = "nm";
+    const tag = document.createElement("span"); tag.className = "ntag" + (hits.has(n) ? " hit" : ""); tag.textContent = hits.has(n) ? "match" : n.cat;
+    m.append(tag, n.source + (n.region ? " · " + n.region : "") + " · " + ago(n.t));
+    a.append(t, m); li.append(a); return li;
+  }));
+  if (state.newsErr && !state.news.length) msg = "Couldn't load news right now. Trying again soon.";
+  else if (!state.news.length) msg = "Loading news…";
+  else if (!items.length) msg = "No stories in this category right now.";
+  else msg += "Updated " + ago(state.newsAt) + ". Purple N dots on the Price chart mark matching stories.";
+  note.textContent = msg;
+}
+const ago = (t) => { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? "just now" : m < 60 ? m + "m ago" : m < 1440 ? Math.round(m / 60) + "h ago" : Math.round(m / 1440) + "d ago"; };
+async function loadNews() {
+  try {
+    const r = await fetch(NEWS_URL, { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    state.news = (Array.isArray(d.items) ? d.items : []).filter((n) => n && typeof n.title === "string" && typeof n.link === "string")
+      .map((n) => ({ title: n.title, link: n.link, source: String(n.source || ""), region: String(n.region || ""), cat: n.category === "metals" ? "commodities" : String(n.category || "other"), t: Date.parse(n.published) || 0 }))
+      .sort((a, b) => b.t - a.t);
+    state.newsAt = Date.parse(d.generated_at) || Date.now(); state.newsErr = null;
+  } catch (e) { state.newsErr = e.message; }
+  renderNews();
+  if (state.series.price) renderCharts();
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("#nchips .chip"); if (!b) return;
+  state.newsCat = b.dataset.n; renderNews();
+});
+loadNews(); setInterval(loadNews, 10 * 60 * 1000);
 
 /* ---------- price alerts (favorites) ---------- */
 state.alerts = []; state.prices = {};
@@ -717,11 +823,12 @@ function updateFav() {
 }
 
 function selectMarket(m) {
-  state.coin = m.coin; state.dex = m.dex; state.ref = m.ref;
+  state.coin = m.coin; state.dex = m.dex; state.ref = m.ref; state.base = m.base; state.cat = m.cat;
   state.stock = null; state.stockErr = null; state.ctx = null; state.series = {};
   $("lgref").textContent = m.ref ? "Reference (" + m.ref + ")" : "Reference (none)";
   try { localStorage.setItem("market", m.coin); } catch (e) {}
   updateFav();
+  renderNews();
   tick(true);
 }
 
