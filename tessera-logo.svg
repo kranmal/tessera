@@ -1,15 +1,19 @@
 <svg viewBox="0 0 64 64" width="512" height="512" role="img" aria-label="Tessera logo" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2f7a"/><stop offset="1" stop-color="#0d1033"/></linearGradient>
+        <linearGradient id="tb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#303587"/><stop offset="1" stop-color="#0a0d2e"/></linearGradient>
+        <radialGradient id="tr" cx=".5" cy=".38" r=".6"><stop offset="0" stop-color="#6366f1" stop-opacity=".45"/><stop offset="1" stop-color="#6366f1" stop-opacity="0"/></radialGradient>
         <linearGradient id="tt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c9cffa"/></linearGradient>
-        <linearGradient id="ts" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aa4f2"/><stop offset="1" stop-color="#5f6ad2"/></linearGradient>
-        <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fcd980"/><stop offset=".55" stop-color="#e9a73a"/><stop offset="1" stop-color="#b9771c"/></linearGradient>
+        <linearGradient id="ts" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5aef7"/><stop offset="1" stop-color="#5f6ad2"/></linearGradient>
+        <linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fde29a"/><stop offset=".55" stop-color="#f0b040"/><stop offset="1" stop-color="#c0791a"/></linearGradient>
+        <linearGradient id="th" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
       </defs>
-      <rect x="4" y="4" width="56" height="56" rx="15" fill="url(#tb)"/>
-      <rect x="4.75" y="4.75" width="54.5" height="54.5" rx="14.3" fill="none" stroke="url(#tg)" stroke-width="1.5" opacity=".9"/>
-      <rect x="12.5" y="13" width="11" height="11" rx="2.6" fill="url(#ts)"/>
-      <rect x="26.5" y="13" width="11" height="11" rx="2.6" fill="url(#tt)"/>
-      <rect x="40.5" y="13" width="11" height="11" rx="2.6" fill="url(#ts)"/>
-      <rect x="26.5" y="27" width="11" height="11" rx="2.6" fill="url(#tt)" opacity=".88"/>
-      <rect x="26.5" y="41" width="11" height="11" rx="2.6" fill="url(#tg)"/>
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="url(#tb)"/>
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="url(#tr)"/>
+      <rect x="3" y="3" width="58" height="29" rx="16" fill="url(#th)"/>
+      <rect x="3.75" y="3.75" width="56.5" height="56.5" rx="15.3" fill="none" stroke="url(#tg)" stroke-width="1.5" opacity=".95"/>
+      <rect x="10" y="11" width="13.5" height="13.5" rx="3" fill="url(#ts)"/>
+      <rect x="25.25" y="11" width="13.5" height="13.5" rx="3" fill="url(#tt)"/>
+      <rect x="40.5" y="11" width="13.5" height="13.5" rx="3" fill="url(#ts)"/>
+      <rect x="25.25" y="26.25" width="13.5" height="13.5" rx="3" fill="url(#tt)" opacity=".9"/>
+      <path d="M32 42 L38.4 53 H25.6 Z" fill="url(#tg)" stroke="url(#tg)" stroke-width="2.4" stroke-linejoin="round"/>
     </svg>
